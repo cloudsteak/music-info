@@ -2,6 +2,8 @@
 
 ## Prepare
 
+Install Conda: https://docs.anaconda.com/free/miniconda
+
 ```bash
 conda create --prefix ./.venv python=3.11.5 -y
 conda activate ./.venv

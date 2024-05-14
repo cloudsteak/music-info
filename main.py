@@ -16,6 +16,7 @@ def find_music_info(artist, title):
             artist=artist, recording=title, limit=1
         )
         info = {}
+        
         for recording in result["recording-list"]:
             try: 
                 if "release-list" in recording:
@@ -88,8 +89,13 @@ def update_genre(path, default_genre, comment):
     # Check if the directory exists
     if not os.path.exists(music_directory):
         raise Exception("The specified music directory does not exist: " + music_directory)
-
-    for file_name in os.listdir(music_directory):
+    
+    files = os.listdir(music_directory)
+    item_count = len(files)
+    current_item = 0
+    for file_name in files:
+        current_item += 1
+        print("#####", current_item, "of", item_count)
         if file_name.endswith(".mp3"):
             file_path = os.path.join(music_directory, file_name)
             audio = EasyID3(file_path)

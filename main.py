@@ -6,7 +6,7 @@ import logging
 
 # Configure the logging settings
 logging.basicConfig(filename='error.log', 
-                    level=logging.ERROR, 
+                    level=logging.WARNING, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Add support for the comment tag in EasyID3
@@ -125,6 +125,8 @@ def main():
         logging.error("The specified path does not exist. %s", e, exc_info=True)
         return
 
+    logging.warning("######################################")
+    logging.warning("Updating MP3 tags for %s", args.path)
     update_genre(args.path, args.default_genre, args.comment)
 
 if __name__ == "__main__":

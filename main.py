@@ -2,6 +2,12 @@ import os
 from mutagen.easyid3 import EasyID3, EasyID3KeyError
 import musicbrainzngs
 import argparse
+import logging
+
+# Configure the logging settings
+logging.basicConfig(filename='error.log', 
+                    level=logging.ERROR, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Add support for the comment tag in EasyID3
 if 'comment' not in EasyID3.valid_keys.keys():
@@ -22,7 +28,7 @@ def find_music_info(artist, title):
                 if "release-list" in recording:
                     info["date"] = recording["release-list"][0]["date"][:4]
             except Exception as e:
-                print("Error finding music date for", artist, title, ":", str(e))
+                logging.error("Error finding music date for %s %s : %s", artist, title, e, exc_info=True)
             
             try:
                 if "tag-list" in recording:
@@ -34,7 +40,7 @@ def find_music_info(artist, title):
                     ]
                     info["genre"] = ", ".join(genres)
             except Exception as e:
-                print("Error finding music genre for", artist, title, ":", str(e))
+                logging.error("Error finding music genre for %s %s : %s", artist, title, e, exc_info=True)
         return info
     
 
@@ -63,7 +69,7 @@ def update_mp3_tags(file_path, info, default_genre, comment):
         else:
             print("Skipped", file_path)
     except Exception as e:
-        print("Error updating tags for", file_path.split("/")[-1], ":", str(e))
+        logging.error("Error updating tags for %s : %s", file_path.split("/")[-1], e, exc_info=True)
 
 
 # Normalize the genre names
@@ -95,15 +101,17 @@ def update_genre(path, default_genre, comment):
     current_item = 0
     for file_name in files:
         current_item += 1
-        print("#####", current_item, "of", item_count)
+        print("#####", current_item, "of", item_count, "(", file_name, ")")
         if file_name.endswith(".mp3"):
-            file_path = os.path.join(music_directory, file_name)
-            audio = EasyID3(file_path)
-            artist = audio.get("artist", ["Unknown Artist"])[0]
-            title = audio.get("title", ["Unknown Title"])[0]
-            music_info = find_music_info(artist, title)
-            update_mp3_tags(file_path, music_info, default_genre, comment)
-
+            try:
+                file_path = os.path.join(music_directory, file_name)
+                audio = EasyID3(file_path)
+                artist = audio.get("artist", ["Unknown Artist"])[0]
+                title = audio.get("title", ["Unknown Title"])[0]
+                music_info = find_music_info(artist, title)
+                update_mp3_tags(file_path, music_info, default_genre, comment)
+            except Exception as e:
+                logging.error("Error updating file %s : %s", file_name, e, exc_info=True)
 
 def main():
     parser = argparse.ArgumentParser(description="Update MP3 tags (Release date, Genre, Comment)")
@@ -114,7 +122,7 @@ def main():
     args = parser.parse_args()
     
     if not os.path.exists(args.path):
-        print("The specified path does not exist.")
+        logging.error("The specified path does not exist. %s", e, exc_info=True)
         return
 
     update_genre(args.path, args.default_genre, args.comment)

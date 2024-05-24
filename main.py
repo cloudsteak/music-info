@@ -26,7 +26,7 @@ def find_music_info(artist, title):
         for recording in result["recording-list"]:
             try: 
                 if "release-list" in recording:
-                    info["date"] = recording["release-list"][0]["date"][:4]
+                    info["date"] = str(int(recording["release-list"][0]["date"][:4]))
             except Exception as e:
                 logging.error("Error finding music date for %s %s : %s", artist, title, e, exc_info=True)
             
